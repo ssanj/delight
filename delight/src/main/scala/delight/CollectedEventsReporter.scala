@@ -26,32 +26,36 @@ trait CollectedEventsReporter extends Reporter {
                       throwable
                     )
 
-            case TestSucceeded (ordinal, suiteName, suiteId, Some(suiteClassName), testName, testText, _,
-                                  _, _, location, _, payload, _, timestamp) =>
-              events += RecordedEvent(
-                          ordinal,
-                          suiteName,
-                          suiteId,
-                          suiteClassName,
-                          testName,
-                          testText,
-                          location,
-                          payload,
-                          timestamp,
-                          Passed,
-                          None
-                        )
+      case TestSucceeded (ordinal, suiteName, suiteId, Some(suiteClassName), testName, testText, _,
+                            _, _, location, _, payload, _, timestamp) =>
+        events += RecordedEvent(
+                    ordinal,
+                    suiteName,
+                    suiteId,
+                    suiteClassName,
+                    testName,
+                    testText,
+                    location,
+                    payload,
+                    timestamp,
+                    Passed,
+                    None
+                  )
 
       case r: RunCompleted =>
         events.groupBy(_.suiteClassName).map {
           case (k, values) =>
-            processEvents(k, values)
+            println(
+              processEvents(k, values).collect {
+                case Line(line) => line
+              }.mkString("\n")
+            )
         }
 
       case _ =>
     }
   }
 
-  def processEvents(suiteClassName: String, events: Seq[RecordedEvent]): Unit
+  def processEvents(suiteClassName: String, events: Seq[RecordedEvent]): Seq[Output]
 
 }

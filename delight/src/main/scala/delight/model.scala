@@ -21,7 +21,6 @@ sealed trait TestStatus
 final case object Passed extends TestStatus
 final case object Failed extends TestStatus
 
-final case class ClassName(value: String)
-final case class MethodName(value: String)
-
-final case class ClassElement(className: ClassName, methodName: MethodName)
+sealed trait Output
+final case class Line(value: String) extends Output
+case object NoOutput extends Output

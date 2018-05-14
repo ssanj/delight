@@ -5,18 +5,18 @@ import StackTraceFunctions.showStackTrace
 
 final class LittleRed extends CollectedEventsReporter {
 
-  override def processEvents(suiteClassName: String, events: Seq[RecordedEvent]): Unit = {
+  override def processEvents(suiteClassName: String, events: Seq[RecordedEvent]): Seq[Output] = {
 
-    println(s"${green}${suiteClassName}:${reset}")
+    val heading = Line(s"${green}${suiteClassName}:${reset}")
 
     val (failed ,passed) = events.partition(_.status == Failed)
 
-    passed.foreach { v =>
-      println(s"  - ${green}${v.testName}${reset}")
+    val passedLines = passed.map { v =>
+      Line(s"  - ${green}${v.testName}${reset}")
     }
 
-    failed.take(1).foreach { v =>
-      println(s"  - ${red}${v.testName}${reset}")
+    val failedLines = failed.headOption.map { v =>
+      Line(s"  - ${red}${v.testName}${reset}")
         (v.status, v.throwable) match {
           case (Failed, Some(error)) =>
             val errorMessage = s"${messagePadding}${error.getMessage}"
@@ -26,11 +26,13 @@ final class LittleRed extends CollectedEventsReporter {
               case first => s"${strackTracePadding}${first.mkString}"
             }
 
-            println(errorMessage + testLine)
+            Line(errorMessage + testLine)
 
-          case (_, _) =>
+          case (_, _) => NoOutput
         }
     }
+
+    heading +: (passedLines ++ failedLines)
   }
 
   private[LittleRed] val messagePadding = "    > "
