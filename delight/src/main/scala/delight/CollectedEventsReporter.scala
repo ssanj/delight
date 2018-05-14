@@ -13,7 +13,7 @@ trait CollectedEventsReporter extends Reporter {
       case TestFailed(ordinal, message, suiteName, suiteId, Some(suiteClassName), testName, testText, _,
                         throwable, _, _, location, _, payload, _, timestamp) =>
           events += RecordedEvent(
-                      ordinal,
+                      RunId(ordinal.runStamp),
                       suiteName,
                       suiteId,
                       suiteClassName,
@@ -29,7 +29,7 @@ trait CollectedEventsReporter extends Reporter {
       case TestSucceeded (ordinal, suiteName, suiteId, Some(suiteClassName), testName, testText, _,
                             _, _, location, _, payload, _, timestamp) =>
         events += RecordedEvent(
-                    ordinal,
+                    RunId(ordinal.runStamp),
                     suiteName,
                     suiteId,
                     suiteClassName,

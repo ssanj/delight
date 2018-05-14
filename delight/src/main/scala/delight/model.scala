@@ -2,8 +2,10 @@ package delight
 
 import org.scalatest.events._
 
+final case class RunId(value: Int)
+
 final case class RecordedEvent(
-  ordinal: Ordinal,
+  runId: RunId,
   suiteName: String,
   suiteId: String,
   suiteClassName: String,

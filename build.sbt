@@ -19,6 +19,8 @@ lazy val commonSettings = Seq(
 
 lazy val scalaTest = "org.scalatest"  %% "scalatest"   % "3.0.5"
 
+lazy val scalaCheck = "org.scalacheck" %% "scalacheck" % "1.14.0" % Test
+
 lazy val parent = (project in file("."))
   .dependsOn(sample)
   .settings(
@@ -40,5 +42,5 @@ lazy val delight = (project in file("delight"))
   .settings(
     commonSettings,
     licenses ++= Seq(("MIT", url("http://opensource.org/licenses/MIT"))),
-    libraryDependencies ++= Seq(scalaTest % Compile)
+    libraryDependencies ++= Seq(scalaTest % Compile, scalaCheck)
 )
