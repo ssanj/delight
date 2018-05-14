@@ -16,7 +16,6 @@ final class LittleRed extends CollectedEventsReporter {
     }
 
     val failedLines = failed.headOption.map { v =>
-      Line(s"  - ${red}${v.testName}${reset}")
         (v.status, v.throwable) match {
           case (Failed, Some(error)) =>
             val errorMessage = s"${messagePadding}${error.getMessage}"
@@ -26,9 +25,11 @@ final class LittleRed extends CollectedEventsReporter {
               case first => s"${strackTracePadding}${first.mkString}"
             }
 
-            Line(errorMessage + testLine)
+            MultiLine(Line(s"  - ${red}${v.testName}${reset}"),
+                      Line(errorMessage + testLine))
 
-          case (_, _) => NoOutput
+
+          case (_, _) => Line(s"  - ${red}${v.testName}${reset}")
         }
     }
 

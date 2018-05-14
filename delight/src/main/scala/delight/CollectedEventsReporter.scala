@@ -48,6 +48,7 @@ trait CollectedEventsReporter extends Reporter {
             println(
               processEvents(k, values).collect {
                 case Line(line) => line
+                case MultiLine(line1, line2, other@_*) => (line1 +: line2 +: other).map(_.value).mkString("\n")
               }.mkString("\n")
             )
         }
