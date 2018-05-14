@@ -23,5 +23,5 @@ final case object Failed extends TestStatus
 
 sealed trait Output
 final case class Line(value: String) extends Output
-final case class MultiLine(value: Line*) extends Output
+final case class MultiLine(value1: Line, value2: Line, values: Line*) extends Output
 case object NoOutput extends Output
