@@ -1,0 +1,17 @@
+language: scala
+scala:
+   - 2.12.6
+
+jdk:
+ - oraclejdk8
+
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt
+
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION delight/test;
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
