@@ -132,34 +132,52 @@ object LittleRedProps extends Properties("LittleRed") {
       else true
     }
 
-  //TODO: Move this out
-  property("stacktrace") =
+  property("failed tests should only have  single stacktrace line") =
     littleRedFailedWithStackTrace { (event, stacktrace) =>
+      (stacktrace.length == 1) :| s"expected single stacktrace line. Got: ${stacktrace.mkString(",")}"
+    }
 
-      val lengthProp = (stacktrace.length == 1) :| s"should only have a single stacktrace line. Got: ${stacktrace.mkString}"
-      lengthProp && {
+  property("failed tests should have stacktrace info") =
+    littleRedFailedWithStackTrace { (event, stacktrace) =>
         val st = stacktrace(0)
-        val errorPaddingProp = st.startsWith(errorMessagePadding) :| s"stacktrace should start with [${errorMessagePadding}]: ${st}"
+
+        val withouterrorMessagePadding = st.stripPrefix(errorMessagePadding)
+        val errorMessagePaddingProp =
+          (withouterrorMessagePadding.length == (st.length - errorMessagePadding.length)) :|
+            s"stacktrace: [${st}] should contain errorMessagePadding: [${errorMessagePadding}]"
 
         val exception = event.throwable.get
-        val containsErrorMessageProp = st.contains(exception.getMessage) :| s"stacktrace should contain Exception message: ${exception.getMessage} but got: ${st}"
+        val exceptionMessage = exception.getMessage
 
-        val stPaddingProp = st.contains(stackTracePadding) :| s"stacktrace should contain stackTracePadding before stacktrace: ${st}"
+        val withoutExceptionMessage = withouterrorMessagePadding.stripPrefix(exceptionMessage)
+        val exceptionMessageProp =
+          (withoutExceptionMessage.length == (withouterrorMessagePadding.length - exceptionMessage.length)) :|
+            s"stacktrace: [${st}] should contain exceptionMessage: [${exceptionMessage}]"
 
-        val stContentProp = {
-          val ste = exception.getStackTrace()(0)
-          st.contains(ste.getFileName) :| s"stacktrace: ${st} should contain fileName: ${ste.getFileName}" &&
-          st.contains(ste.getLineNumber.toString) :| s"stacktrace: ${st} should contain line number: ${ste.getLineNumber}" &&
-          st.contains(":") :| s"stacktrace: ${st} should contain a colon" &&
-          st.contains("(") :| s"stacktrace: ${st} should contain a (" &&
-          st.contains(")") :| s"stacktrace: ${st} should contain a )"
-        }
+        val withoutstackTracePadding = withoutExceptionMessage.stripPrefix(stackTracePadding)
+        val stackTracePaddingProp =
+          (withoutstackTracePadding.length == (withoutExceptionMessage.length - stackTracePadding.length)) :|
+            s"stacktrace: [${st}] should contain stackTracePadding: [${stackTracePadding}]"
 
-        errorPaddingProp &&
-        containsErrorMessageProp &&
-        stPaddingProp &&
-        stContentProp
-      }
+        val openBraceProp = (withoutstackTracePadding.startsWith("(")) :| s"stacktrace: [${st}] should contain ("
+        val closeBraceProp = (withoutstackTracePadding.endsWith(")"))  :| s"stacktrace: [${st}] should contain )"
+
+        val fileAndLine = withoutstackTracePadding.drop(1).dropRight(1)
+        val ste = exception.getStackTrace()(0)
+        val parts = fileAndLine.split(":")
+
+        val fileNameProp = (parts(0) == ste.getFileName) :|
+          s"stacktrace: [${st}] should contain fileName: ${ste.getFileName}"
+        val lineNumberProp = (parts(1) == ste.getLineNumber.toString) :|
+          s"stacktrace: [${st}] should contain fileName: ${ste.getLineNumber}"
+
+        errorMessagePaddingProp &&
+        exceptionMessageProp &&
+        stackTracePaddingProp &&
+        openBraceProp &&
+        fileNameProp &&
+        lineNumberProp &&
+        closeBraceProp
     }
 
   private def littleRedPassed(propertyAssertions: (Seq[RecordedEvent], Seq[String]) => Prop): Prop =
