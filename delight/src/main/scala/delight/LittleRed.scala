@@ -19,14 +19,11 @@ final class LittleRed extends CollectedEventsReporter {
         (v.status, v.throwable) match {
           case (Failed, Some(error)) =>
             val errorMessage = s"${errorMessagePadding}${error.getMessage}"
-            val stacktraces = showStackTrace(error).take(1)
-            val testLine = stacktraces match {
-              case Seq() => ""
-              case first => s"${strackTracePadding}${first.mkString}"
-            }
+            val stOp = showStackTrace(error).headOption
+            val st   = stOp.fold("")(firstSt => s"${strackTracePadding}${firstSt}")
 
             MultiLine(Line(s"${messagePadding}${red}${v.testName}${reset}"),
-                      Line(errorMessage + testLine))
+                      Line(s"${errorMessage}${st}"))
 
 
           case (_, _) => Line(s"${messagePadding}${red}${v.testName}${reset}")

@@ -43,11 +43,50 @@ object Gens {
     listOfN(_, genRecordedEvent.map(re => re.copy(status = Passed, throwable = None)))
   }
 
+  final case class ClassName(value: String)
+  final case class MethodName(value: String)
+  final case class FileName(value: String)
+  final case class LineNumber(value: Int)
+
+  def genClassName: Gen[ClassName] = for {
+    length    <- choose(3, 6)
+    prefix    <- listOfN(length, alphaLowerStr).map(_.mkString("."))
+    upperChar <- alphaUpperChar
+    lowers    <- listOfN(length, alphaLowerChar)
+  } yield ClassName(s"${prefix}${upperChar}${lowers}")
+
+  def genMethodName: Gen[MethodName] = for {
+    length    <- choose(3, 6)
+    prefix    <- listOfN(length, alphaLowerChar)
+    upperChar <- alphaUpperChar
+    lowers    <- listOfN(length, alphaLowerChar)
+  } yield MethodName(s"${prefix}${upperChar}${lowers}")
+
+  def genFileName: Gen[FileName] = for {
+    length   <- choose(4, 6)
+    filename <- listOfN(length, alphaLowerChar).map(_.mkString)
+  } yield FileName(s"${filename}.scala")
+
+  def genLineNumber: Gen[LineNumber] = posNum[Int].map(LineNumber)
+
+  def genStackTraceElement: Gen[StackTraceElement] = for {
+    className  <- genClassName.map(_.value)
+    methodName <- genMethodName.map(_.value)
+    fileName   <- genFileName.map(_.value)
+    line       <- genLineNumber.map(_.value)
+  } yield new StackTraceElement(className, methodName, fileName, line)
+
+  def genListOfStackTraceElement: Gen[List[StackTraceElement]] = for {
+    length   <- choose(2, 3)
+    traces   <- listOfN(length, genStackTraceElement)
+  } yield traces
+
   def genListOfRecordedFailedEvent: Gen[List[RecordedEvent]] = {
     val genWithError =
       for {
         re    <- genRecordedEvent
-        error <- genThrowable
+        st    <- genListOfStackTraceElement
+        error <- genThrowable.map{ e => e.setStackTrace(st.toArray); e}
       } yield re.copy(status = Failed, throwable = Some(error))
 
     sized(listOfN(_, genWithError))

@@ -9,7 +9,9 @@ import Gens._
 
 object LittleRedProps extends Properties("LittleRed") {
 
-  private val padding = "  - "
+  private val padding             = "  - "
+  private val errorMessagePadding = "    > "
+  private val stackTracePadding   = " | "
 
   property("always output suiteName") =
     Prop.forAll(Gen.asciiStr, genListOfRecordedEvent) {
@@ -31,11 +33,11 @@ object LittleRedProps extends Properties("LittleRed") {
   property("passed test should contain test name") =
     littleRedPassed { (events, lines) =>
       def allLinesContainTestNameProp = {
-          val props = lines.zip(events).map {
-            case (line, event) => line.contains(event.testName) :| s"Line:$line doesn't contain testName:${event.testName}"
-          }
+        val props = lines.zip(events).map {
+          case (line, event) => line.contains(event.testName) :| s"Line:$line doesn't contain testName:${event.testName}"
+        }
 
-          Prop.all(props:_*)
+        Prop.all(props:_*)
       }
 
       allLinesContainTestNameProp
@@ -123,6 +125,42 @@ object LittleRedProps extends Properties("LittleRed") {
         Prop.all(props:_*)
       }
 
+  property("should only display one failed test") =
+    littleRedFailed { (events, lines) =>
+      //even if there are more than one failed test, there should be only one displayed
+      if (events.length >= 1) (lines.length == 1) :| "There should be only one failed test"
+      else true
+    }
+
+  //TODO: Move this out
+  property("stacktrace") =
+    littleRedFailedWithStackTrace { (event, stacktrace) =>
+
+      val lengthProp = (stacktrace.length == 1) :| s"should only have a single stacktrace line. Got: ${stacktrace.mkString}"
+      lengthProp && {
+        val st = stacktrace(0)
+        val errorPaddingProp = st.startsWith(errorMessagePadding) :| s"stacktrace should start with [${errorMessagePadding}]: ${st}"
+
+        val exception = event.throwable.get
+        val containsErrorMessageProp = st.contains(exception.getMessage) :| s"stacktrace should contain Exception message: ${exception.getMessage} but got: ${st}"
+
+        val stPaddingProp = st.contains(stackTracePadding) :| s"stacktrace should contain stackTracePadding before stacktrace: ${st}"
+
+        val stContentProp = {
+          val ste = exception.getStackTrace()(0)
+          st.contains(ste.getFileName) :| s"stacktrace: ${st} should contain fileName: ${ste.getFileName}" &&
+          st.contains(ste.getLineNumber.toString) :| s"stacktrace: ${st} should contain line number: ${ste.getLineNumber}" &&
+          st.contains(":") :| s"stacktrace: ${st} should contain a colon" &&
+          st.contains("(") :| s"stacktrace: ${st} should contain a (" &&
+          st.contains(")") :| s"stacktrace: ${st} should contain a )"
+        }
+
+        errorPaddingProp &&
+        containsErrorMessageProp &&
+        stPaddingProp &&
+        stContentProp
+      }
+    }
 
   private def littleRedPassed(propertyAssertions: (Seq[RecordedEvent], Seq[String]) => Prop): Prop =
     Prop.forAll(arbitrary[String], genListOfRecordedPassedEvent) {
@@ -137,7 +175,7 @@ object LittleRedProps extends Properties("LittleRed") {
         propertyAssertions(events, lines)
       }
 
-  private def littleRedFailed(propertyAssertions: (Seq[RecordedEvent], Seq[String]) => Prop): Prop = {
+  private def littleRedFailed(propertyAssertions: (Seq[RecordedEvent], Seq[String]) => Prop): Prop =
     Prop.forAll(arbitrary[String], genListOfRecordedFailedEvent) {
       case (suiteName, events) =>
         val reporter = new LittleRed
@@ -150,5 +188,19 @@ object LittleRedProps extends Properties("LittleRed") {
 
         propertyAssertions(events, lines)
       }
-  }
+
+  private def littleRedFailedWithStackTrace(propertyAssertions: (RecordedEvent, Seq[String]) => Prop): Prop =
+    Prop.forAll(arbitrary[String], genListOfRecordedFailedEvent) {
+      case (suiteName, events) =>
+        val reporter = new LittleRed
+        val results  = reporter.processEvents(suiteName, events)
+
+        //only collect lines with a message and a stacktrace
+        val stacktraces = results.drop(1).collect {
+          case MultiLine(_, Line(stacktrace), _*) => stacktrace
+        }
+
+        if (events.nonEmpty) propertyAssertions(events.head, stacktraces)
+        else Prop(true)
+      }
 }
