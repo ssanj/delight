@@ -42,11 +42,6 @@ object LittleRedProps extends Properties("LittleRed") {
       Prop.all(props:_*)
     }
 
-    // def haveGreenColour(lines: Seq[String]): Prop = {
-    //   val props = lines.map(l => l.contains(Colours.green) :| s"Line: [${l}] does not contain colour green")
-    //   Prop.all(props:_*)
-    // }
-
     def nameShouldBeGreenColour(events: Seq[RecordedEvent], lines: Seq[String]): Prop = {
       val props = events.zip(lines).map {
         case (event, line) => line.contains(s"${Colours.green}${event.testName}") :|
@@ -56,7 +51,7 @@ object LittleRedProps extends Properties("LittleRed") {
       Prop.all(props:_*)
     }
 
-    def outputShouldHaveExpectedLength(events: Seq[RecordedEvent], lines: Seq[String]): Prop = {
+    def outputShouldHaveLengthOfParts(events: Seq[RecordedEvent], lines: Seq[String]): Prop = {
       val props = events.zip(lines).map {
         case (event, line) =>
           val lineStructure = padding + Colours.green + event.testName + Colours.reset
@@ -67,7 +62,7 @@ object LittleRedProps extends Properties("LittleRed") {
       Prop.all(props:_*)
     }
 
-    def allLinesContainTestNameProp(events: Seq[RecordedEvent], lines: Seq[String]): Prop = {
+    def allLinesContainTestName(events: Seq[RecordedEvent], lines: Seq[String]): Prop = {
       val props = lines.zip(events).map {
         case (line, event) => line.contains(event.testName) :| s"Line:$line doesn't contain testName:${event.testName}"
       }
@@ -78,110 +73,113 @@ object LittleRedProps extends Properties("LittleRed") {
     def properties: Prop =
       littleRedPassed { (events, lines) =>
         startWithPadding(lines) &&
-        allLinesContainTestNameProp(events, lines) &&
+        allLinesContainTestName(events, lines) &&
         nameShouldBeGreenColour(events, lines) &&
         endWithColourReset(lines) &&
-        outputShouldHaveExpectedLength(events, lines)
+        outputShouldHaveLengthOfParts(events, lines)
+      }
+  }
+
+  object FailedTest {
+    def startWithPadding(lines: Seq[String]): Prop = {
+      val props = lines.map(line => line.startsWith(padding) :| s"Line: [${line}] does not start with [${padding}]")
+      Prop.all(props:_*)
+    }
+
+    def endWithColourReset(lines: Seq[String]): Prop = {
+      val props = lines.map(line => line.endsWith(Colours.reset) :| s"Line: [${line}] does not end with colour reset")
+      Prop.all(props:_*)
+    }
+
+    def nameShouldBeRed(events: Seq[RecordedEvent] ,lines: Seq[String]): Prop = {
+      val props = events.zip(lines).map {
+        case (event, line) =>
+          line.contains(s"${Colours.red}${event.testName}") :|
+          s"Line: [${line}] does not have testName: ${event.testName} following red colour code"
+      }
+
+      Prop.all(props:_*)
+    }
+
+    def outputShouldHaveLengthOfParts(events: Seq[RecordedEvent] ,lines: Seq[String]): Prop = {
+      val props = events.zip(lines).map {
+        case (event, line) =>
+          val lineStructure = padding + Colours.red + event.testName + Colours.reset
+          (lineStructure.length ?= line.length) :|
+            s"Line: [${line}] of length: ${line.length} is not equal to Structure: [${lineStructure}] of length: ${lineStructure.length}"
+      }
+
+      Prop.all(props:_*)
+    }
+
+    def onlyHaveOneFailedTest(events: Seq[RecordedEvent] ,lines: Seq[String]): Prop = {
+        //even if there are more than one failed test, there should be only one displayed
+        if (events.length >= 1) (lines.length == 1) :| "There should be only one failed test"
+        else true
+    }
+
+    def properties: Prop =
+      littleRedFailed { (events, lines) =>
+        startWithPadding(lines) &&
+        nameShouldBeRed(events, lines) &&
+        endWithColourReset(lines) &&
+        outputShouldHaveLengthOfParts(events, lines) &&
+        onlyHaveOneFailedTest(events, lines)
       }
   }
 
   property("passed test properties") = PassedTest.properties
 
-
-  property("failed test should start with padding") =
-      littleRedFailed { (_, lines) =>
-        val props = lines.map(line => line.startsWith(padding) :| s"Line: [${line}] does not start with [${padding}]")
-        Prop.all(props:_*)
-      }
-
-  property("failed test should end with console colour reset") =
-      littleRedFailed { (_, lines) =>
-        val props = lines.map(line => line.endsWith(Colours.reset) :| s"Line: [${line}] does not end with colour reset")
-        Prop.all(props:_*)
-      }
-
-  property("failed test should have the colour red") =
-      littleRedFailed { (_, lines) =>
-        val props = lines.map(line => line.contains(Colours.red) :| s"Line: [${line}] does not end with colour red")
-        Prop.all(props:_*)
-      }
-
-  property("failed test name should follow colour red") =
-      littleRedFailed { (events,lines) =>
-        val props = events.zip(lines).map {
-          case (event, line) =>
-            line.contains(s"${Colours.red}${event.testName}") :|
-            s"Line: [${line}] does not have testName: ${event.testName} following red colour code"
-        }
-
-        Prop.all(props:_*)
-      }
-
-  property("failed test line should be the sum of all its parts") =
-      littleRedFailed { (events, lines) =>
-        val props = events.zip(lines).map {
-          case (event, line) =>
-            val lineStructure = padding + Colours.red + event.testName + Colours.reset
-            (lineStructure.length ?= line.length) :|
-              s"Line: [${line}] of length: ${line.length} is not equal to Structure: [${lineStructure}] of length: ${lineStructure.length}"
-        }
-
-        Prop.all(props:_*)
-      }
-
-  property("should only display one failed test") =
-    littleRedFailed { (events, lines) =>
-      //even if there are more than one failed test, there should be only one displayed
-      if (events.length >= 1) (lines.length == 1) :| "There should be only one failed test"
-      else true
-    }
-
-  property("failed tests should only have  single stacktrace line") =
-    littleRedFailedWithStackTrace { (event, stacktrace) =>
-      (stacktrace.length == 1) :| s"expected single stacktrace line. Got: ${stacktrace.mkString(",")}"
-    }
+  property("failed test properties") = FailedTest.properties
 
   property("failed tests should have stacktrace info") =
     littleRedFailedWithStackTrace { (event, stacktrace) =>
-        val st = stacktrace(0)
+        val haveSingleStackTraceLine: Prop =
+          (stacktrace.length == 1) :| s"expected single stacktrace line. Got: ${stacktrace.mkString(",")}"
 
-        val withouterrorMessagePadding = st.stripPrefix(errorMessagePadding)
-        val errorMessagePaddingProp =
-          (withouterrorMessagePadding.length == (st.length - errorMessagePadding.length)) :|
-            s"stacktrace: [${st}] should contain errorMessagePadding: [${errorMessagePadding}]"
+        def stackTraceInfo(st: String): Prop = {
+          val withouterrorMessagePadding = st.stripPrefix(errorMessagePadding)
+          val errorMessagePaddingProp =
+            (withouterrorMessagePadding.length == (st.length - errorMessagePadding.length)) :|
+              s"stacktrace: [${st}] should contain errorMessagePadding: [${errorMessagePadding}]"
 
-        val exception = event.throwable.get
-        val exceptionMessage = exception.getMessage
+          val exception = event.throwable.get
+          val exceptionMessage = exception.getMessage
 
-        val withoutExceptionMessage = withouterrorMessagePadding.stripPrefix(exceptionMessage)
-        val exceptionMessageProp =
-          (withoutExceptionMessage.length == (withouterrorMessagePadding.length - exceptionMessage.length)) :|
-            s"stacktrace: [${st}] should contain exceptionMessage: [${exceptionMessage}]"
+          val withoutExceptionMessage = withouterrorMessagePadding.stripPrefix(exceptionMessage)
+          val exceptionMessageProp =
+            (withoutExceptionMessage.length == (withouterrorMessagePadding.length - exceptionMessage.length)) :|
+              s"stacktrace: [${st}] should contain exceptionMessage: [${exceptionMessage}]"
 
-        val withoutstackTracePadding = withoutExceptionMessage.stripPrefix(stackTracePadding)
-        val stackTracePaddingProp =
-          (withoutstackTracePadding.length == (withoutExceptionMessage.length - stackTracePadding.length)) :|
-            s"stacktrace: [${st}] should contain stackTracePadding: [${stackTracePadding}]"
+          val withoutstackTracePadding = withoutExceptionMessage.stripPrefix(stackTracePadding)
+          val stackTracePaddingProp =
+            (withoutstackTracePadding.length == (withoutExceptionMessage.length - stackTracePadding.length)) :|
+              s"stacktrace: [${st}] should contain stackTracePadding: [${stackTracePadding}]"
 
-        val openBraceProp = (withoutstackTracePadding.startsWith("(")) :| s"stacktrace: [${st}] should contain ("
-        val closeBraceProp = (withoutstackTracePadding.endsWith(")"))  :| s"stacktrace: [${st}] should contain )"
+          val openBraceProp = (withoutstackTracePadding.startsWith("(")) :| s"stacktrace: [${st}] should contain ("
+          val closeBraceProp = (withoutstackTracePadding.endsWith(")"))  :| s"stacktrace: [${st}] should contain )"
 
-        val fileAndLine = withoutstackTracePadding.drop(1).dropRight(1)
-        val ste = exception.getStackTrace()(0)
-        val parts = fileAndLine.split(":")
+          val fileAndLine = withoutstackTracePadding.drop(1).dropRight(1)
+          val ste = exception.getStackTrace()(0)
+          val parts = fileAndLine.split(":")
 
-        val fileNameProp = (parts(0) == ste.getFileName) :|
-          s"stacktrace: [${st}] should contain fileName: ${ste.getFileName}"
-        val lineNumberProp = (parts(1) == ste.getLineNumber.toString) :|
-          s"stacktrace: [${st}] should contain fileName: ${ste.getLineNumber}"
+          val fileNameProp = (parts(0) == ste.getFileName) :|
+            s"stacktrace: [${st}] should contain fileName: ${ste.getFileName}"
 
-        errorMessagePaddingProp &&
-        exceptionMessageProp &&
-        stackTracePaddingProp &&
-        openBraceProp &&
-        fileNameProp &&
-        lineNumberProp &&
-        closeBraceProp
+          val lineNumberProp = (parts(1) == ste.getLineNumber.toString) :|
+            s"stacktrace: [${st}] should contain fileName: ${ste.getLineNumber}"
+
+          errorMessagePaddingProp &&
+          exceptionMessageProp &&
+          stackTracePaddingProp &&
+          openBraceProp &&
+          fileNameProp &&
+          lineNumberProp &&
+          closeBraceProp
+        }
+
+        haveSingleStackTraceLine &&
+        stackTraceInfo(stacktrace(0))
     }
 
   private def littleRedPassed(propertyAssertions: (Seq[RecordedEvent], Seq[String]) => Prop): Prop =
