@@ -76,3 +76,39 @@ def isEmpty[A](list: List[A]): Boolean = list.foldLeft(true)((_, _) => false)
 we see that all the tests pass!
 
 ![all tests pass](success.png)
+
+## Installation
+
+### Bintray
+
+Add the following to your `build.sbt`:
+
+```scala
+libraryDependencies += "net.ssanj" %% "delight" % "0.0.1"
+```
+
+
+### Local
+
+Clone this repo and install it locally with:
+
+```scala
+project delight
+sbt publishLocal
+```
+
+You can then include it in any SBT project as per usual:
+
+```scala
+libraryDependencies += "net.ssanj" %% "delight" % "0.0.1"
+```
+
+## Publishing
+
+To publish a new version perform the following tasks:
+
+```
+project delight
+publish
+bintrayRelease
+```
