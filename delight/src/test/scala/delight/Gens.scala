@@ -81,15 +81,21 @@ object Gens {
     traces   <- listOfN(length, genStackTraceElement)
   } yield traces
 
-  def genListOfRecordedFailedEvent: Gen[List[RecordedEvent]] = {
-    val genWithError =
-      for {
-        re    <- genRecordedEvent
-        st    <- genListOfStackTraceElement
-        error <- genThrowable.map{ e => e.setStackTrace(st.toArray); e}
-      } yield re.copy(status = Failed, throwable = Some(error))
+  def genFailedRecordedEventWithStackTrace: Gen[RecordedEvent] = for {
+      re    <- genRecordedEvent
+      st    <- genListOfStackTraceElement
+      error <- genThrowable.map{ e => e.setStackTrace(st.toArray); e}
+    } yield re.copy(status = Failed, throwable = Some(error))
 
-    sized(listOfN(_, genWithError))
+  def genFailedRecordedEventWithoutStackTrace: Gen[RecordedEvent] = for {
+      re      <- genRecordedEvent
+      message <- arbitrary[String]
+      error   <- new scala.util.control.NoStackTrace { override def getMessage = message }
+    } yield re.copy(status = Failed, throwable = Some(error))
+
+
+  def genListOfRecordedFailedEvent: Gen[List[RecordedEvent]] = {
+    sized(listOfN(_, genFailedRecordedEventWithStackTrace))
   }
 
   def genListOfRecordedEvent: Gen[List[RecordedEvent]] = sized {
