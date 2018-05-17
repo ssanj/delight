@@ -30,59 +30,63 @@ object LittleRedProps extends Properties("LittleRed") {
         resultsContainSuiteNameProp
     }
 
-  property("passed test should contain test name") =
-    littleRedPassed { (events, lines) =>
-      def allLinesContainTestNameProp = {
-        val props = lines.zip(events).map {
-          case (line, event) => line.contains(event.testName) :| s"Line:$line doesn't contain testName:${event.testName}"
-        }
+  object PassedTest {
 
-        Prop.all(props:_*)
-      }
-
-      allLinesContainTestNameProp
+    def startWithPadding(lines: Seq[String]): Prop = {
+      val props = lines.map(l => l.startsWith(padding) :| s"Line: [${l}] does not start with [${padding}]")
+      Prop.all(props:_*)
     }
 
-  property("passed test should start with padding") =
-      littleRedPassed { (_, lines) =>
-        val props = lines.map(l => l.startsWith(padding) :| s"Line: [${l}] does not start with [${padding}]")
-        Prop.all(props:_*)
+    def endWithColourReset(lines: Seq[String]): Prop = {
+      val props = lines.map(l => l.endsWith(Colours.reset) :| s"Line: [${l}] does not end with colour reset")
+      Prop.all(props:_*)
+    }
+
+    // def haveGreenColour(lines: Seq[String]): Prop = {
+    //   val props = lines.map(l => l.contains(Colours.green) :| s"Line: [${l}] does not contain colour green")
+    //   Prop.all(props:_*)
+    // }
+
+    def nameShouldBeGreenColour(events: Seq[RecordedEvent], lines: Seq[String]): Prop = {
+      val props = events.zip(lines).map {
+        case (event, line) => line.contains(s"${Colours.green}${event.testName}") :|
+          s"Line: [${line}] does not have testName: ${event.testName} following green colour code"
       }
 
-  property("passed test should end with console colour reset") =
-      littleRedPassed { (_, lines) =>
-        val props = lines.map(l => l.endsWith(Colours.reset) :| s"Line: [${l}] does not end with colour reset")
-        Prop.all(props:_*)
+      Prop.all(props:_*)
+    }
+
+    def outputShouldHaveExpectedLength(events: Seq[RecordedEvent], lines: Seq[String]): Prop = {
+      val props = events.zip(lines).map {
+        case (event, line) =>
+          val lineStructure = padding + Colours.green + event.testName + Colours.reset
+          (lineStructure.length ?= line.length) :|
+            s"Line: [${line}] of length: ${line.length} is not equal to Structure: [${lineStructure}] of length: ${lineStructure.length}"
       }
 
-  property("passed test have green colour code") =
-      littleRedPassed { (_, lines) =>
-        val props = lines.map(l => l.contains(Colours.green) :| s"Line: [${l}] does not contain colour green")
-        Prop.all(props:_*)
+      Prop.all(props:_*)
+    }
+
+    def allLinesContainTestNameProp(events: Seq[RecordedEvent], lines: Seq[String]): Prop = {
+      val props = lines.zip(events).map {
+        case (line, event) => line.contains(event.testName) :| s"Line:$line doesn't contain testName:${event.testName}"
       }
 
-  property("passed test name should follow green colour code") =
+      Prop.all(props:_*)
+    }
+
+    def properties: Prop =
       littleRedPassed { (events, lines) =>
-
-        val props = events.zip(lines).map {
-          case (event, line) => line.contains(s"${Colours.green}${event.testName}") :|
-            s"Line: [${line}] does not have testName: ${event.testName} following green colour code"
-        }
-
-        Prop.all(props:_*)
+        startWithPadding(lines) &&
+        allLinesContainTestNameProp(events, lines) &&
+        nameShouldBeGreenColour(events, lines) &&
+        endWithColourReset(lines) &&
+        outputShouldHaveExpectedLength(events, lines)
       }
+  }
 
-  property("passed test line should be the sum of all its parts") =
-      littleRedPassed { (events, lines) =>
-        val props = events.zip(lines).map {
-          case (event, line) =>
-            val lineStructure = padding + Colours.green + event.testName + Colours.reset
-            (lineStructure.length ?= line.length) :|
-              s"Line: [${line}] of length: ${line.length} is not equal to Structure: [${lineStructure}] of length: ${lineStructure.length}"
-        }
+  property("passed test properties") = PassedTest.properties
 
-        Prop.all(props:_*)
-      }
 
   property("failed test should start with padding") =
       littleRedFailed { (_, lines) =>
