@@ -25,7 +25,7 @@ What if we could just reduce the noise of these failing tests and just focus on 
 
 This reporter shows all tests that pass and only the first test that fails. Once you fix the first failing test, the next failing test is shown. The Stacktrace is also truncated to only one line with the most relevant information. The objective of this reporter is to get out of your way and help you focus on the task at hand.
 
-We can use the LittleRed report supplying the following parameters to ScalaTest:
+We can use the LittleRed reporter supplying the following parameters to ScalaTest:
 
 ```
 -- -C delight.LittleRed
@@ -76,6 +76,45 @@ def isEmpty[A](list: List[A]): Boolean = list.foldLeft(true)((_, _) => false)
 we see that all the tests pass!
 
 ![all tests pass](success.png)
+
+## Nature
+
+![Nature](nature.jpg)
+[Nature from Threadless](https://www.threadless.com/product/8704/Nature_will_win/)
+
+The Nature reporter shows all failing and passing tests. The objective of this reporter is to show as much useful information as possible without overloading the senses.
+
+![Nature Failures](nature-failures.png)
+
+We can use the Nature reporter supplying the following parameters to ScalaTest:
+
+```
+-- -C delight.Nature
+```
+
+For example to run the [ListExercisesSpec](https://github.com/ssanj/delight/blob/master/sample/src/test/scala/sample/ListExercisesSpec.scala) in the `sample` project, first switch to the sample project:
+
+```
+project sample
+```
+
+Next run Nature:
+
+```
+~testOnly *ListExercisesSpec -- -C delight.Nature
+```
+
+
+It lets you see the forest for the trees. It does this by doing the following:
+
+- Shows a single Stacktrace line per error
+- Has a quick summary of passed, failed and total tests run
+- Passed and failed tests have a short green or red PASSED or FAILED text respectively. This prevents drowning the user in a sea of red or green
+
+After fixing some of the tests:
+
+![Nature Failures](nature-wip.png)
+
 
 ## Installation
 
