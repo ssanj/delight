@@ -84,8 +84,6 @@ we see that all the tests pass!
 
 The Nature reporter shows all failing and passing tests. The objective of this reporter is to show as much useful information as possible without overloading the senses.
 
-![Nature Failures](nature-failures.png)
-
 We can use the Nature reporter supplying the following parameters to ScalaTest:
 
 ```
@@ -104,6 +102,7 @@ Next run Nature:
 ~testOnly *ListExercisesSpec -- -C delight.Nature
 ```
 
+![Nature Failures](nature-failures.png)
 
 It lets you see the forest for the trees. It does this by doing the following:
 
