@@ -90,11 +90,11 @@ libraryDependencies += "net.ssanj" %% "delight" % "0.0.1"
 
 ### Local
 
-Clone this repo and install it locally with:
+Clone this repo and install it locally from SBT with:
 
 ```scala
 project delight
-sbt publishLocal
+publishLocal
 ```
 
 You can then include it in any SBT project as per usual:
