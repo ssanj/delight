@@ -44,19 +44,14 @@ trait CollectedEventsReporter extends Reporter {
 
       case r: RunCompleted =>
         events.groupBy(_.suiteClassName).map {
-          case (k, values) =>
-            println(
-              processEvents(k, values).collect {
-                case Line(line) => line
-                case MultiLine(line1, line2, other@_*) => (line1 +: line2 +: other).map(_.value).mkString("\n")
-              }.mkString("\n")
-            )
+          case (k, values) => println(Output.shows(processEvents(k, values)).mkString("\n"))
         }
 
       case _ =>
     }
   }
 
+  //TODO: Make this return Output
   def processEvents(suiteClassName: String, events: Seq[RecordedEvent]): Seq[Output]
 
 }
