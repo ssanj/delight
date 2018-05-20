@@ -15,6 +15,7 @@ object Gens {
       testText       <- arbitrary[String]
       timeStamp      <- posNum[Long]
       status         <- oneOf(Passed, Failed)
+      throwable      <- genThrowable
     } yield RecordedEvent(
               RunId(runId),
               suiteName,
@@ -26,7 +27,7 @@ object Gens {
               None,
               timeStamp,
               status,
-              None
+              if (status == Failed) Some(throwable) else None
             )
 
   def genThrowable: Gen[Throwable] = for {

@@ -8,7 +8,7 @@ import Gens._
 
 object FailedTest {
 
-  private val padding             = "  - "
+  private val padding = "  - "
 
   def properties: Prop =
     littleRedFailed { (events, lines) =>

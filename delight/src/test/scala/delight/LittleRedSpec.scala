@@ -16,8 +16,8 @@ final class LittleRedSpec extends Matchers with WordSpecLike {
         val reporter = new LittleRed
         val results  = reporter.processEvents(suiteName, events)
 
-        val stacktraces = results.drop(1).collect {
-          case MultiLine(_, Line(stacktrace), _*) => stacktrace
+        val errorLine = results.drop(1).collect {
+          case MultiLine(_, Line(error), _*) => error
         }
 
         events.
@@ -25,10 +25,10 @@ final class LittleRedSpec extends Matchers with WordSpecLike {
           flatMap(_.throwable).
           map(_.getMessage).
           fold(
-            fail("expected one stacktrace element")
+            fail("expected error message")
           ) { error =>
-            stacktraces should have size (1)
-            stacktraces(0).stripPrefix("    > ") should be (error)
+            errorLine should have size (1)
+            errorLine(0).stripPrefix("    > ") should be (error)
           }
       }
     }
