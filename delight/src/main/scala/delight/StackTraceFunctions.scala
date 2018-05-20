@@ -20,7 +20,7 @@ object StackTraceFunctions {
     ignored.exists(ig => stacktrace.getClassName.contains(ig))
   }
 
-  val ignored = Seq("scala.", "org.scalatest", "sbt.", "java.")
+  val ignored: Seq[String] = Seq("scala.", "org.scalatest", "sbt.", "java.")
 
   def showStackTraceElement(ste: StackTraceElement): String = {
     s"(${ste.getFileName}:${ste.getLineNumber.toString})"

@@ -4,6 +4,7 @@ import org.scalatest.events._
 
 final case class RunId(value: Int)
 
+@SuppressWarnings(Array("org.wartremover.warts.DefaultArguments"))
 final case class RecordedEvent(
   runId: RunId,
   suiteName: String,
@@ -30,6 +31,7 @@ case object NoOutput extends Output
 
 //TODO: Test
 object Output {
+  @SuppressWarnings(Array("org.wartremover.warts.Recursion"))
   def shows(outputs: Seq[Output]): Seq[String] = outputs match {
     case Seq(Line(value), rest@_*)                          => value +: shows(rest)
     case Seq(MultiLine(Line(v1), v2, more@_*), rest@_*)     => v1 +: shows(v2 +: (more ++ rest))

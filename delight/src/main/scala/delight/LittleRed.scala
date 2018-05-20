@@ -28,7 +28,7 @@ final class LittleRed extends CollectedEventsReporter {
 
           case (_, _) => Line(s"${messagePadding}${red}${v.testName}${reset}")
         }
-    }
+    }.toList
 
     heading +: (passedLines ++ failedLines)
   }

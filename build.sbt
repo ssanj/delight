@@ -15,7 +15,7 @@ lazy val commonSettings = Seq(
                       "-Ywarn-nullary-override",
                       "-Ywarn-nullary-unit"
                      ),
-  //(wartremoverWarnings ++= Warts.all)
+  wartremoverErrors in (Compile, compile) ++= Warts.allBut(Wart.Any)
 )
 
 lazy val scalaTest = "org.scalatest"  %% "scalatest"   % "3.0.5"

@@ -8,10 +8,16 @@ trait CollectedEventsReporter extends Reporter {
 
   private val events = new ListBuffer[RecordedEvent]
 
+  @specialized def sideEffect[A](evaluateForSideEffectOnly: A): Unit = {
+    val _: A = evaluateForSideEffectOnly
+    () //Return unit to prevent warning due to discarding value
+  }
+
   override def apply(event: Event): Unit = {
     event match {
       case TestFailed(ordinal, message, suiteName, suiteId, Some(suiteClassName), testName, testText, _,
                         throwable, _, _, location, _, payload, _, timestamp) =>
+        sideEffect(
           events += RecordedEvent(
                       RunId(ordinal.runStamp),
                       suiteName,
@@ -25,27 +31,32 @@ trait CollectedEventsReporter extends Reporter {
                       Failed,
                       throwable
                     )
+        )
 
       case TestSucceeded (ordinal, suiteName, suiteId, Some(suiteClassName), testName, testText, _,
                             _, _, location, _, payload, _, timestamp) =>
-        events += RecordedEvent(
-                    RunId(ordinal.runStamp),
-                    suiteName,
-                    suiteId,
-                    suiteClassName,
-                    testName,
-                    testText,
-                    location,
-                    payload,
-                    timestamp,
-                    Passed,
-                    None
-                  )
+        sideEffect(
+          events += RecordedEvent(
+                      RunId(ordinal.runStamp),
+                      suiteName,
+                      suiteId,
+                      suiteClassName,
+                      testName,
+                      testText,
+                      location,
+                      payload,
+                      timestamp,
+                      Passed,
+                      None
+                    )
+        )
 
       case r: RunCompleted =>
-        events.groupBy(_.suiteClassName).map {
-          case (k, values) => println(Output.shows(processEvents(k, values)).mkString("\n"))
-        }
+        sideEffect(
+          events.groupBy(_.suiteClassName).map {
+            case (k, values) => println(Output.shows(processEvents(k, values)).mkString("\n"))
+          }
+        )
 
       case _ =>
     }
