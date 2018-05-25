@@ -18,13 +18,14 @@ object NatureProps extends Properties("Nature") {
       heading match {
         case Line(line) =>
           val sections = line.split(" ")
-          val (failed, passed) = events.partition(_.status == Failed)
-          val total = failed.length + passed.length
+          val passed   = events.filter(_.status == Passed).length
+          val failed   = events.length - passed
+          val total    = events.length
           Prop.all(
             (sections.length ?= 4) :| s"Expected 4 sections but got: ${sections.length}, for line: [${line}]",
             coloured("", Colours.green, s"${suiteName}:")(sections(0)) :| s"prefix section for line: [${line}]",
-            coloured("passed:", Colours.green, passed.length.toString)(sections(1)) :| s"passed section for line: [${line}]",
-            coloured("failed:", Colours.red, failed.length.toString)(sections(2)) :| s"failed section for line: [${line}]",
+            coloured("passed:", Colours.green, passed.toString)(sections(1)) :| s"passed section for line: [${line}]",
+            coloured("failed:", Colours.red, failed.toString)(sections(2)) :| s"failed section for line: [${line}]",
             (sections(3) ?= s"total:${total}") :| s"total section for line: [${line}]"
           )
         case other => false :| s"Expected Line but got: ${other}"
