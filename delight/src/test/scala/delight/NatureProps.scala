@@ -5,6 +5,7 @@ import org.scalacheck.Prop
 import org.scalacheck.Prop._
 import org.scalacheck.Arbitrary.arbitrary
 import Gens._
+import PropUtil._
 
 object NatureProps extends Properties("Nature") {
 
@@ -30,15 +31,6 @@ object NatureProps extends Properties("Nature") {
           )
         case other => false :| s"Expected Line but got: ${other}"
       }
-    }
-
-    def coloured(prefix: String, colour: String, text: String)(section: String): Prop = {
-      Prop.all(
-        section.startsWith(prefix) :| s"Section: [${section}] does not start with prefix: ${prefix}",
-        section.stripPrefix(prefix).startsWith(colour)  :| s"Section: [${section}] does have ${colour}colour${Colours.reset} following prefix",
-        section.stripSuffix(Colours.reset).endsWith(text) :| s"Section: [${section}] does not have text: [${text}] before reset",
-        section.endsWith(Colours.reset) :| s"Section: [${section}] does not end with colour reset"
-      )
     }
 
     notEmpty(outputs) &&

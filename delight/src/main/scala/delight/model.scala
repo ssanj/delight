@@ -19,6 +19,7 @@ final case class RecordedEvent(
   throwable: Option[Throwable]
 )
 
+
 //ADT for Test Statuses
 sealed trait TestStatus
 final case object Passed extends TestStatus
