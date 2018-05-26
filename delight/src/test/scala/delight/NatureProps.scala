@@ -5,7 +5,7 @@ import delight.nature.HeaderTest
 import delight.nature.PassedOrFailedTest
 // import delight.nature.WithStackTrace
 
-object NatureCommonProps extends Properties("NatureCommon") {
+object NatureProps extends Properties("Nature") {
 
   property("header line") = HeaderTest.properties
 
