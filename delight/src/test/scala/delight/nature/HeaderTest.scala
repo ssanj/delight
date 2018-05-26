@@ -1,17 +1,15 @@
 package delight
+package nature
 
-import org.scalacheck.Properties
 import org.scalacheck.Prop
 import org.scalacheck.Prop._
 import org.scalacheck.Arbitrary.arbitrary
 import Gens._
 import PropUtil._
 
-object NatureProps extends Properties("Nature") {
+object HeaderTest {
 
-  property("should have a formatted heading") = headingProp
-
-  def headingProp: Prop = natureEvents { (suiteName, events, outputs) =>
+  def properties: Prop = natureEvents { (suiteName, events, outputs) =>
 
     def notEmpty(lines: Seq[Output]): Prop = lines.length > 0
 
@@ -45,6 +43,4 @@ object NatureProps extends Properties("Nature") {
 
         propertyAssertions(suiteName, events, results)
       }
-
-
 }

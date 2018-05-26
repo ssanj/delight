@@ -3,7 +3,7 @@ package delight
 import org.scalacheck.Gen
 import Gens._
 
-//There functions should ideally be on the TestStatus ADT.
+//These functions should ideally be on the TestStatus ADT.
 //Unfortunately these functions deal with test-specific behaviour
 //and as such shouldn't be against the production model.
 //We create ColourStatus here to namespace these functions.
