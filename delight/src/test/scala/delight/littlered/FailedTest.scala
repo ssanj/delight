@@ -13,32 +13,14 @@ object FailedTest {
 
   def properties: Prop =
     littleRedFailed { (events, lines) =>
-      startWithPadding(lines) &&
-      nameShouldBeRed(events, lines) &&
-      endWithColourReset(lines) &&
-      outputShouldHaveLengthOfParts(events, lines) &&
+      startWithPadding(lines)(padding) &&
+      formattedFailedLine(events, lines) &&
       onlyHaveOneFailedTest(events, lines)
     }
 
-  private def startWithPadding(lines: Seq[String]): Prop =
-    lines.map(line => line.startsWith(padding) :| s"Line: [${line}] does not start with [${padding}]")
-
-  private def endWithColourReset(lines: Seq[String]): Prop =
-    lines.map(line => line.endsWith(Colours.reset) :| s"Line: [${line}] does not end with colour reset")
-
-  private def nameShouldBeRed(events: Seq[RecordedEvent] ,lines: Seq[String]): Prop =
+  private def formattedFailedLine(events: Seq[RecordedEvent] ,lines: Seq[String]): Prop =
     events.zip(lines).map {
-      case (event, line) =>
-        line.contains(s"${Colours.red}${event.testName}") :|
-        s"Line: [${line}] does not have testName: ${event.testName} following red colour code"
-    }
-
-  private def outputShouldHaveLengthOfParts(events: Seq[RecordedEvent], lines: Seq[String]): Prop =
-    events.zip(lines).map {
-      case (event, line) =>
-        val lineStructure = padding + Colours.red + event.testName + Colours.reset
-        (lineStructure.length ?= line.length) :|
-          s"Line: [${line}] of length: ${line.length} is not equal to Structure: [${lineStructure}] of length: ${lineStructure.length}"
+      case (event, line) => coloured(padding, Colours.red, event.testName)(line)
     }
 
   private def onlyHaveOneFailedTest(events: Seq[RecordedEvent] ,lines: Seq[String]): Prop = {

@@ -2,7 +2,6 @@ package delight
 package littlered
 
 import org.scalacheck.Prop
-import org.scalacheck.Prop._
 import org.scalacheck.Arbitrary.arbitrary
 import Gens._
 import PropUtil._
@@ -13,36 +12,13 @@ object PassedTest {
 
   def properties: Prop =
     littleRedPassed { (events, lines) =>
-      startWithPadding(lines) &&
-      allLinesContainTestName(events, lines) &&
-      nameShouldBeGreenColour(events, lines) &&
-      endWithColourReset(lines) &&
-      outputShouldHaveLengthOfParts(events, lines)
+      startWithPadding(lines)(padding) &&
+      formattedPassedLine(events, lines)
     }
 
-  private def startWithPadding(lines: Seq[String]): Prop =
-    lines.map(l => l.startsWith(padding) :| s"Line: [${l}] does not start with [${padding}]")
-
-  private def endWithColourReset(lines: Seq[String]): Prop =
-    lines.map(l => l.endsWith(Colours.reset) :| s"Line: [${l}] does not end with colour reset")
-
-  private def nameShouldBeGreenColour(events: Seq[RecordedEvent], lines: Seq[String]): Prop =
+  private def formattedPassedLine(events: Seq[RecordedEvent], lines: Seq[String]): Prop =
     events.zip(lines).map {
-      case (event, line) => line.contains(s"${Colours.green}${event.testName}") :|
-        s"Line: [${line}] does not have testName: ${event.testName} following green colour code"
-    }
-
-  private def outputShouldHaveLengthOfParts(events: Seq[RecordedEvent], lines: Seq[String]): Prop =
-    events.zip(lines).map {
-      case (event, line) =>
-        val lineStructure = padding + Colours.green + event.testName + Colours.reset
-        (lineStructure.length ?= line.length) :|
-          s"Line: [${line}] of length: ${line.length} is not equal to Structure: [${lineStructure}] of length: ${lineStructure.length}"
-    }
-
-  private def allLinesContainTestName(events: Seq[RecordedEvent], lines: Seq[String]): Prop =
-    lines.zip(events).map {
-      case (line, event) => line.contains(event.testName) :| s"Line:$line doesn't contain testName:${event.testName}"
+      case (event, line) => coloured(padding, Colours.green, event.testName)(line)
     }
 
   private def littleRedPassed(propertyAssertions: (Seq[RecordedEvent], Seq[String]) => Prop): Prop =
