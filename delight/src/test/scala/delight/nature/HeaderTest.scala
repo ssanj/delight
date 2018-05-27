@@ -16,10 +16,15 @@ object HeaderTest {
     def headerFormat(heading: Output): Prop = {
       heading match {
         case Line(line) =>
-          val sections = line.split(" ")
+          val split = line.split(" ")
           val passed   = events.filter(_.status == Passed).length
           val failed   = events.length - passed
           val total    = events.length
+          val sections = if (split.length > 4) {
+            val joinLength = split.length - 3
+            //join parts of the suiteName if they have additional spaces
+            split.take(joinLength).mkString(" ") +: split.drop(joinLength)
+          } else split
           Prop.all(
             (sections.length ?= 4) :| s"Expected 4 sections but got: ${sections.length}, for line: [${line}]",
             coloured("", Colours.green, s"${suiteName}:")(sections(0)) :| s"prefix section for line: [${line}]",
