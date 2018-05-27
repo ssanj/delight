@@ -18,12 +18,22 @@ object FailedProp {
   private val errorMessagePadding = "    > "
   private val strackTracePadding  = " | "
 
-  def properties: Prop =
-    natureFailed{ (events, lines) =>
+  def properties: Prop = {
+    val withStackTrace = natureFailed{ (events, lines) =>
       startWithPadding(lines.map(_.status.line))(padding) &&
       failedLineFormatting(events, lines.map(_.status)) &&
       stackTrace(events, lines.map(_.error))
     }
+
+    val withoutStackTrace = natureFailedNoStackTrace{ (events, lines) =>
+      startWithPadding(lines.map(_.status.line))(padding) &&
+      failedLineFormatting(events, lines.map(_.status)) &&
+      noStackTrace(events, lines.map(_.error))
+    }
+
+    withStackTrace &&
+    withoutStackTrace
+  }
 
   private def failedLineFormatting(events: Seq[RecordedEvent], lines: Seq[StatusLine]): Prop =
     events.zip(lines).map {
@@ -48,6 +58,8 @@ private def stackTrace(events: Seq[RecordedEvent], lines: Seq[ErrorLine]): Prop 
         val errorMessageProp = (line.stripPrefix(errorMessagePadding).startsWith(errorMessage)) :| s"Line: [${line}] does not contain error message: [${errorMessage}]"
         val stackTraceSection = line.stripPrefix(errorMessagePadding + errorMessage)
         val stackTracePaddingProp = stackTraceSection.startsWith(strackTracePadding) :| s"Line: [${line}] does not contain stacktrace padding: [${strackTracePadding}]"
+
+        //TODO: Try and factor out ignore logic
         val stackTraceElement =
             event.
               throwable.
@@ -65,8 +77,32 @@ private def stackTrace(events: Seq[RecordedEvent], lines: Seq[ErrorLine]): Prop 
         stackTraceProp
     }
 
+private def noStackTrace(events: Seq[RecordedEvent], lines: Seq[ErrorLine]): Prop =
+    events.zip(lines).map {
+      case (event, ErrorLine(line)) =>
+        val errorMessage = event.throwable.map(_.getMessage).getOrElse("-No-Error-Message-")
+        val errorPaddingProp = line.startsWith(errorMessagePadding) :| s"Line: [${line}] does not start with error padding: [${errorMessagePadding}]"
+        val errorMessageProp = (line.stripPrefix(errorMessagePadding) ?= errorMessage) :| s"Line: [${line}] does not contain error message: [${errorMessage}]"
+
+        errorPaddingProp &&
+        errorMessageProp
+    }
+
   def natureFailed(propertyAssertions: (Seq[RecordedEvent], Seq[Failure]) => Prop): Prop =
     Prop.forAll(arbitrary[String], genListOfRecordedFailedEvent) {
+      case (suiteName, events) =>
+        val reporter = new Nature
+        val results  = reporter.processEvents(suiteName, events)
+
+        val lines = results.drop(1).collect {
+          case MultiLine(Line(status), Line(error)) => Failure(StatusLine(status), ErrorLine(error))
+        }
+
+        propertyAssertions(events, lines)
+      }
+
+  def natureFailedNoStackTrace(propertyAssertions: (Seq[RecordedEvent], Seq[Failure]) => Prop): Prop =
+    Prop.forAll(arbitrary[String], genListOfRecordedFailedWithoutStackTraceEvent) {
       case (suiteName, events) =>
         val reporter = new Nature
         val results  = reporter.processEvents(suiteName, events)

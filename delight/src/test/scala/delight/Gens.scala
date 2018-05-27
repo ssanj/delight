@@ -99,6 +99,10 @@ object Gens {
     sized(listOfN(_, genFailedRecordedEventWithStackTrace))
   }
 
+  def genListOfRecordedFailedWithoutStackTraceEvent: Gen[List[RecordedEvent]] = {
+    sized(listOfN(_, genFailedRecordedEventWithoutStackTrace))
+  }
+
   def genListOfRecordedEvent: Gen[List[RecordedEvent]] = sized {
     listOfN(_, genRecordedEvent)
   }
