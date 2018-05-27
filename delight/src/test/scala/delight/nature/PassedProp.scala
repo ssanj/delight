@@ -1,23 +1,23 @@
 package delight
 package nature
 
-import org.scalacheck.Gen
 import org.scalacheck.Prop
 import org.scalacheck.Prop._
 import org.scalacheck.Arbitrary.arbitrary
+import Gens._
 import PropUtil._
 
-object PassedOrFailedTest {
+object PassedProp {
 
   private val padding = "  - "
 
-  def properties(status: TestStatus): Prop =
-    naturePassedOrFailed(ColourStatus.gen(status), ({ (events, lines) =>
+  def properties: Prop =
+    naturePassed{ (events, lines) =>
       startWithPadding(lines)(padding) &&
-      passedLineFormatting(events, lines, status)
-    }))
+      passedLineFormatting(events, lines)
+    }
 
-  private def passedLineFormatting(events: Seq[RecordedEvent], lines: Seq[String], status: TestStatus): Prop =
+  private def passedLineFormatting(events: Seq[RecordedEvent], lines: Seq[String]): Prop =
     events.zip(lines).map {
       case (event, line) =>
         val split = line.stripPrefix(padding).split(" ")
@@ -28,12 +28,12 @@ object PassedOrFailedTest {
           coloured("", Colours.cyan, event.testName)(sections(0)),
           sections(1).startsWith("[") :| s"Section does not start with '[': ${sections(1)}",
           sections(1).endsWith("]") :| s"Section does not end with '[': ${sections(1)}",
-          coloured("", ColourStatus.colour(status), ColourStatus.name(status))(sections(1).drop(1).dropRight(1))
+          coloured("", Colours.green, "PASSED")(sections(1).drop(1).dropRight(1))
         )
     }
 
-  def naturePassedOrFailed(gen: Gen[List[RecordedEvent]], propertyAssertions: (Seq[RecordedEvent], Seq[String]) => Prop): Prop =
-    Prop.forAll(arbitrary[String], gen) {
+  def naturePassed(propertyAssertions: (Seq[RecordedEvent], Seq[String]) => Prop): Prop =
+    Prop.forAll(arbitrary[String], genListOfRecordedPassedEvent) {
       case (suiteName, events) =>
         val reporter = new Nature
         val results  = reporter.processEvents(suiteName, events)

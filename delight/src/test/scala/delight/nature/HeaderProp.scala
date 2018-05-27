@@ -7,7 +7,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import Gens._
 import PropUtil._
 
-object HeaderTest {
+object HeaderProp {
 
   def properties: Prop = natureEvents { (suiteName, events, outputs) =>
 
@@ -16,7 +16,7 @@ object HeaderTest {
     def headerFormat(heading: Output): Prop = {
       heading match {
         case Line(line) =>
-          val split = line.split(" ")
+          val split    = line.split(" ")
           val passed   = events.filter(_.status == Passed).length
           val failed   = events.length - passed
           val total    = events.length
