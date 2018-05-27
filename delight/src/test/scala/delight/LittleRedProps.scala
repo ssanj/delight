@@ -1,19 +1,19 @@
 package delight
 
 import org.scalacheck.Properties
-import delight.littlered.AnyTest
-import delight.littlered.PassedTest
-import delight.littlered.FailedTest
+import delight.littlered.HeaderProp
+import delight.littlered.PassedProp
+import delight.littlered.FailedProp
 import delight.littlered.WithStackTrace
 
 object LittleRedProps extends Properties("LittleRed") {
 
-  property("all tests output suiteName") = AnyTest.properties
+  property("header line")     = HeaderProp.properties
 
-  property("passed test properties")     = PassedTest.properties
+  property("passed line")     = PassedProp.properties
 
-  property("failed test properties")     = FailedTest.properties
+  property("failed line")     = FailedProp.properties
 
-  property("stacktrace properties")      = WithStackTrace.properties
+  property("stacktrace line") = WithStackTrace.properties
 
 }

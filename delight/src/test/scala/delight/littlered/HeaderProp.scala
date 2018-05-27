@@ -6,7 +6,7 @@ import org.scalacheck.Prop
 import org.scalacheck.Prop._
 import Gens._
 
-object AnyTest {
+object HeaderProp {
 
   def properties: Prop =
     Prop.forAll(Gen.asciiStr, genListOfRecordedEvent) {

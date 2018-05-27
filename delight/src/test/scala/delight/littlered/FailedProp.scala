@@ -7,7 +7,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import Gens._
 import PropUtil._
 
-object FailedTest {
+object FailedProp {
 
   private val padding = "  - "
 
