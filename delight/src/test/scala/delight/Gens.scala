@@ -53,8 +53,8 @@ object Gens {
     length    <- choose(3, 6)
     prefix    <- listOfN(length, alphaLowerStr).map(_.mkString("."))
     upperChar <- alphaUpperChar
-    lowers    <- listOfN(length, alphaLowerChar)
-  } yield ClassName(s"${prefix}${upperChar}${lowers}")
+    lowers    <- listOfN(length, alphaLowerChar).map(_.mkString)
+  } yield ClassName(s"${prefix}.${upperChar}${lowers}")
 
   def genMethodName: Gen[MethodName] = for {
     length    <- choose(3, 6)
