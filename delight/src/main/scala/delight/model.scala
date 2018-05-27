@@ -25,7 +25,7 @@ sealed trait TestStatus
 final case object Passed extends TestStatus
 final case object Failed extends TestStatus
 
-sealed trait LineType { val value: String }
+sealed trait LineType extends Product with Serializable { val value: String }
 
 sealed trait Output extends Product with Serializable
 final case class Line(value: String) extends Output with LineType
