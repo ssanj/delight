@@ -5,6 +5,7 @@ import org.scalacheck.Prop
 import org.scalacheck.Prop._
 import org.scalacheck.Arbitrary.arbitrary
 import Gens._
+import StackTraceFunctions.ignored
 
 object WithStackTrace {
 
@@ -68,8 +69,9 @@ object WithStackTrace {
         val results  = reporter.processEvents(suiteName, events)
 
         //only collect lines with a message and a stacktrace
+        //remove ignored traces
         val stacktraces = results.drop(1).collect {
-          case MultiLine(_, Line(stacktrace), _*) => stacktrace
+          case MultiLine(_, Line(stacktrace), _*) if !ignored.exists(stacktrace.contains) => stacktrace
         }
 
         if (events.nonEmpty) propertyAssertions(events.head, stacktraces)
