@@ -31,7 +31,7 @@ object Gens {
             )
 
   def genThrowable: Gen[Throwable] = for {
-    message <- arbitrary[String]
+    message <- arbitrary[String].map(_.take(20))
     error   <- oneOf(new IllegalArgumentException(message),
                      new IllegalStateException(message),
                      new java.sql.SQLException(message),

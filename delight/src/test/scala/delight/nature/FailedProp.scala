@@ -18,21 +18,24 @@ object FailedProp {
   private val errorMessagePadding = "    > "
   private val strackTracePadding  = " | "
 
-  def properties: Prop = {
-    val withStackTrace = natureFailed{ (events, lines) =>
-      startWithPadding(lines.map(_.status.line))(padding) &&
-      failedLineFormatting(events, lines.map(_.status)) &&
-      stackTrace(events, lines.map(_.error))
-    }
+  sealed trait FailureType
+  case object WithStackTrace extends FailureType
+  case object WithoutStackTrace extends FailureType
 
-    val withoutStackTrace = natureFailedNoStackTrace{ (events, lines) =>
-      startWithPadding(lines.map(_.status.line))(padding) &&
-      failedLineFormatting(events, lines.map(_.status)) &&
-      noStackTrace(events, lines.map(_.error))
-    }
+  def properties(ftype: FailureType): Prop = ftype match {
+    case WithStackTrace =>
+      natureFailed{ (events, lines) =>
+        startWithPadding(lines.map(_.status.line))(padding) &&
+        failedLineFormatting(events, lines.map(_.status)) &&
+        stackTrace(events, lines.map(_.error))
+      }
 
-    withStackTrace &&
-    withoutStackTrace
+    case WithoutStackTrace =>
+      natureFailedNoStackTrace{ (events, lines) =>
+        startWithPadding(lines.map(_.status.line))(padding) &&
+        failedLineFormatting(events, lines.map(_.status)) &&
+        noStackTrace(events, lines.map(_.error))
+      }
   }
 
   private def failedLineFormatting(events: Seq[RecordedEvent], lines: Seq[StatusLine]): Prop =
@@ -52,8 +55,8 @@ object FailedProp {
 
 private def stackTrace(events: Seq[RecordedEvent], lines: Seq[ErrorLine]): Prop =
     events.zip(lines).map {
-      case (event, ErrorLine(line)) =>
-        val errorMessage = event.throwable.map(_.getMessage).getOrElse("-No-Error-Message-")
+      case (RecordedEvent(_, _, _, _, _, _, _, _, _, _, Some(error)), ErrorLine(line)) =>
+        val errorMessage = error.getMessage
         val errorPaddingProp = line.startsWith(errorMessagePadding) :| s"Line: [${line}] does not start with error padding: [${errorMessagePadding}]"
         val errorMessageProp = (line.stripPrefix(errorMessagePadding).startsWith(errorMessage)) :| s"Line: [${line}] does not contain error message: [${errorMessage}]"
         val stackTraceSection = line.stripPrefix(errorMessagePadding + errorMessage)
@@ -61,12 +64,13 @@ private def stackTrace(events: Seq[RecordedEvent], lines: Seq[ErrorLine]): Prop 
 
         //TODO: Try and factor out ignore logic
         val stackTraceElement =
-            event.
-              throwable.
-              flatMap(t => getStackTrace(t).filterNot(t => ignored.exists(t.getClassName.contains)).map(showStackTraceElement).headOption)
-              .getOrElse("-No-StackTrace-")
+            getStackTrace(error).
+              filterNot(ste => ignored.exists(ste.getClassName.contains)).
+              map(showStackTraceElement).
+              headOption.
+              getOrElse("-No-StackTrace-")
 
-        val st = event.throwable.map(t => getStackTrace(t).map(st => st.getClassName + s"${showStackTraceElement(st)}")).toList.flatten
+        val st = getStackTrace(error).map(st => st.getClassName + s"${showStackTraceElement(st)}")
 
         val stackTraceProp = (stackTraceSection.stripPrefix(strackTracePadding) ?= stackTraceElement) :|
           s"Line: [${line}] does not contain stacktrace element: [${stackTraceElement}], full stacktrace: ${st.mkString("\n")}"
@@ -75,17 +79,21 @@ private def stackTrace(events: Seq[RecordedEvent], lines: Seq[ErrorLine]): Prop 
         errorMessageProp &&
         stackTracePaddingProp &&
         stackTraceProp
+
+      case (event, line) => false :| s"expected an event with an error but got: ${event}, for line: ${line}"
     }
 
 private def noStackTrace(events: Seq[RecordedEvent], lines: Seq[ErrorLine]): Prop =
     events.zip(lines).map {
-      case (event, ErrorLine(line)) =>
-        val errorMessage = event.throwable.map(_.getMessage).getOrElse("-No-Error-Message-")
+      case (RecordedEvent(_, _, _, _, _, _, _, _, _, _, Some(error)), ErrorLine(line)) =>
+        val errorMessage = error.getMessage
         val errorPaddingProp = line.startsWith(errorMessagePadding) :| s"Line: [${line}] does not start with error padding: [${errorMessagePadding}]"
         val errorMessageProp = (line.stripPrefix(errorMessagePadding) ?= errorMessage) :| s"Line: [${line}] does not contain error message: [${errorMessage}]"
 
         errorPaddingProp &&
         errorMessageProp
+
+      case (event, line) => false :| s"expected an event with an error but got: ${event}, for line: ${line}"
     }
 
   def natureFailed(propertyAssertions: (Seq[RecordedEvent], Seq[Failure]) => Prop): Prop =
