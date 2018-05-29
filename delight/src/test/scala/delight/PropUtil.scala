@@ -20,4 +20,27 @@ object PropUtil {
   def startWithPadding(lines: Seq[String])(padding: String): Prop =
     lines.map(l => l.startsWith(padding) :| s"Line: [${l}] does not start with [${padding}]")
 
+
+  private[PropUtil] final case class Acc(line: String, prop: Prop)
+
+  final case class Sequential(values: String*) {
+    def on(line: String): Prop = {
+      val lengthProp  = (line.length =? values.map(_.length).sum) :| s"Line: [${line}] has different length to values: [${values.mkString}]"
+      val sectionProp = values.foldLeft(Acc(line, Prop(true))) { (acc, v) =>
+        val prop = acc.line.startsWith(v) :| s"Line: [${line}], substring: [${acc.line}] doesn't start with [${v}]"
+        Acc(acc.line.stripPrefix(v), acc.prop && prop)
+      }.prop
+
+      lengthProp && sectionProp
+    }
+  }
+
+  implicit def toSymbolSequential(value: String): SymbolicSequential = SymbolicSequential(value)
+
+  case class SymbolicSequential(values: String*) {
+    def :> (valueNew: String): SymbolicSequential = SymbolicSequential((values :+ valueNew):_*)
+    def |(line: String): Prop = Sequential(values:_*).on(line)
+  }
+
+  def sequentially(values: String*): Sequential = Sequential(values:_*)
 }
