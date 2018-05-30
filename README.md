@@ -50,7 +50,7 @@ With six failing tests, it only reports the first failing test:
 Let's fix the implementation of the `append` function:
 
 ```
-def append[A](value: A, list: List[A]): List[A] = value :: list
+def append[A](value: A, list: List[A]): List[A] = list :+ value
 ```
 
 Once we fix the implementation, we see the tests that were fixed plus the next failing test:
@@ -60,7 +60,7 @@ Once we fix the implementation, we see the tests that were fixed plus the next f
 Next let's fix the implementation of the `prepend` function:
 
 ```
-def prepend[A](list: List[A], value: A): List[A] = list :+ value
+def prepend[A](list: List[A], value: A): List[A] = value :: list
 ```
 
 After we fix the implementation we see the next failing tests:

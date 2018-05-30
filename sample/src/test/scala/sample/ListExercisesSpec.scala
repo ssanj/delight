@@ -5,23 +5,23 @@ import ListExercises._
 
 final class ListExercisesSpec extends Matchers with WordSpecLike {
   "A List" should {
-    "append a value" when {
+    "prepend a value" when {
       "it is empty" in {
-        append(1, List.empty[Int]) should be (List(1))
+        prepend(1, List.empty[Int]) should be (List(1))
       }
 
       "it is not empty" in {
-        append(5, List(6,7,8,9)) should be (List(5, 6,7,8,9))
+        prepend(5, List(6,7,8,9)) should be (List(5, 6,7,8,9))
       }
     }
 
-    "prepend a value" when {
+    "append a value" when {
       "it is empty" in {
-        prepend(List.empty[Int], 1) should be (List(1))
+        append(List.empty[Int], 1) should be (List(1))
       }
 
       "it is not empty" in {
-        prepend(List(6,7,8,9), 10) should be (List(6,7,8,9,10))
+        append(List(6,7,8,9), 10) should be (List(6,7,8,9,10))
       }
     }
 
