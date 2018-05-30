@@ -106,4 +106,25 @@ object Gens {
   def genListOfRecordedEvent: Gen[List[RecordedEvent]] = sized {
     listOfN(_, genRecordedEvent)
   }
+
+  def genNoOutput: Gen[Output] = const(NoOutput)
+
+  def genLineOutput: Gen[Output] = for {
+    line <- arbitrary[String]
+  } yield Line(line)
+
+  def genLineType: Gen[LineType] = for {
+    line <- arbitrary[String]
+  } yield Line(line)
+
+  def genMultiLineOutput: Gen[Output] = for {
+    line1 <- genLineType
+    line2 <- genLineType
+    length <- choose(1, 3)
+    lines <- listOfN(length, genLineType)
+  } yield MultiLine(line1, line2, lines:_*)
+
+  def genOutput: Gen[Output] = oneOf(genLineOutput, genMultiLineOutput, genNoOutput)
+
+  def genListOfOutput: Gen[List[Output]] = sized { listOfN(_,  genOutput) }
 }

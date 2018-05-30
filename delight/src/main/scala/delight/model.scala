@@ -32,7 +32,6 @@ final case class Line(value: String) extends Output with LineType
 final case class MultiLine(value1: LineType, value2: LineType, values: LineType*) extends Output
 case object NoOutput extends Output
 
-//TODO: Test
 object Output {
   def shows(outputs: Seq[Output]): Seq[String] = outputs.foldRight(Seq.empty[String]){
     case (Line(value), acc)              => value +: acc
