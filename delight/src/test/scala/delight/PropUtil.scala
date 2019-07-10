@@ -1,12 +1,11 @@
 package delight
 
-import scala.collection.GenTraversableOnce
 import scala.language.implicitConversions
 import org.scalacheck.Prop
 import org.scalacheck.Prop._
 
 object PropUtil {
-  implicit def toProps(bools: GenTraversableOnce[Prop]): Prop = Prop.all(bools.toList:_*)
+  implicit def toProps(bools: Seq[Prop]): Prop = Prop.all(bools.toList:_*)
 
   def coloured(prefix: String, colour: String, text: String)(section: String): Prop = {
     Prop.all(

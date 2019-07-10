@@ -11,8 +11,10 @@ final class Nature extends CollectedEventsReporter {
       case (acc, RecordedEvent(_,_,_,_,_,_,_,_,_,Failed,_)) => (acc._1, acc._2 + 1)
     }
 
+    val totalNumTests = passed + failed
+
     val headingLine =
-      Line(s"${green}${suiteClassName}:${reset} passed:${green}${passed}${reset} failed:${red}${failed}${reset} total:${passed + failed}")
+      Line(s"${green}${suiteClassName}:${reset} passed:${green}${passed.toString}${reset} failed:${red}${failed.toString}${reset} total:${totalNumTests.toString}")
 
     val eventLines =
       events.map { v =>

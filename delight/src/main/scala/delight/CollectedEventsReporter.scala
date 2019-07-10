@@ -9,7 +9,7 @@ trait CollectedEventsReporter extends Reporter {
   private val events = new ListBuffer[RecordedEvent]
 
   @specialized def sideEffect[A](evaluateForSideEffectOnly: A): Unit = {
-    val _: A = evaluateForSideEffectOnly
+    val _ = evaluateForSideEffectOnly
     () //Return unit to prevent warning due to discarding value
   }
 
@@ -54,7 +54,7 @@ trait CollectedEventsReporter extends Reporter {
       case r: RunCompleted =>
         sideEffect(
           events.groupBy(_.suiteClassName).map {
-            case (k, values) => println(Output.shows(processEvents(k, values)).mkString("\n"))
+            case (k, values) => println(Output.shows(processEvents(k, values.toSeq)).mkString("\n"))
           }
         )
 
