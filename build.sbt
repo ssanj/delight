@@ -6,22 +6,45 @@ lazy val supportedScalaVersions = List(scala212, scala213)
 
 ThisBuild / scalaVersion := scala212
 
+lazy val scalacOptionsIn212 = 
+  Seq(
+    "-unchecked",
+    "-encoding", "UTF-8",
+    "-deprecation",
+    "-feature",
+    "-Xfatal-warnings",
+    "-Xlint:_",
+    "-Ywarn-dead-code",
+    "-Ywarn-inaccessible",
+    "-Ywarn-unused-import",
+    "-Ywarn-infer-any",
+    "-Ywarn-nullary-override",
+    "-Ywarn-nullary-unit"
+  )
+
+lazy val scalacOptionsIn213 = 
+  Seq(
+    "-unchecked",
+    "-encoding", "UTF-8",
+    "-deprecation",
+    "-feature",
+    "-Werror",
+    "-Xlint:_",
+    "-Wdead-code",
+    "-Wunused:_"
+  )
+
+lazy val scalacSettings = Def.setting {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, 12))=> scalacOptionsIn212
+    case Some((2, 13))=> scalacOptionsIn213
+    case _ => Seq.empty[String]
+  }
+}
+
 lazy val commonSettings = Seq(
   organization := "net.ssanj",
-  version := "0.0.3-SNAPSHOT",
-  scalacOptions ++= Seq(
-                      "-unchecked",
-                      "-deprecation",
-                      "-feature",
-                      "-Xfatal-warnings",
-                      "-Xlint:_",
-                      // "-Ywarn-dead-code",
-                      // "-Wwarn-inaccessible",
-                      // "-Ywarn-unused-import",
-                      // "-Ywarn-infer-any",
-                      // "-Ywarn-nullary-override",
-                      // "-Ywarn-nullary-unit"
-                     ),
+  version := "0.0.4-SNAPSHOT",
   wartremoverErrors in (Compile, compile) ++= Warts.allBut(Wart.Any)
 )
 
@@ -33,23 +56,25 @@ lazy val parent = (project in file("."))
   .aggregate(delight, sample)
   .settings(
     commonSettings,
-    publish := {},
-    publishLocal := {}
+    publish  / skip := true,
+    publishLocal  / skip := true
   )
 
 lazy val sample = (project in file("sample"))
   .dependsOn(delight)
   .settings(
     commonSettings,
+    scalacOptions ++= scalacSettings.value,    
     crossScalaVersions := supportedScalaVersions,
     libraryDependencies ++= Seq(scalaTest % Test),
-    publish := {},
-    publishLocal := {}
+    publish  / skip := true,
+    publishLocal  / skip := true
   )
 
 lazy val delight = (project in file("delight"))
   .settings(
     commonSettings,
+    scalacOptions ++= scalacSettings.value,
     crossScalaVersions := supportedScalaVersions,
     licenses ++= Seq(("MIT", url("http://opensource.org/licenses/MIT"))),
     libraryDependencies ++= Seq(scalaTest % Compile, scalaCheck)

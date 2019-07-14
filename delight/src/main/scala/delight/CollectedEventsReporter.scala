@@ -15,7 +15,7 @@ trait CollectedEventsReporter extends Reporter {
 
   override def apply(event: Event): Unit = {
     event match {
-      case TestFailed(ordinal, message, suiteName, suiteId, Some(suiteClassName), testName, testText, _,
+      case TestFailed(ordinal, _, suiteName, suiteId, Some(suiteClassName), testName, testText, _,
                         throwable, _, _, location, _, payload, _, timestamp) =>
         sideEffect(
           events += RecordedEvent(
@@ -51,7 +51,7 @@ trait CollectedEventsReporter extends Reporter {
                     )
         )
 
-      case r: RunCompleted =>
+      case _: RunCompleted =>
         sideEffect(
           events.groupBy(_.suiteClassName).map {
             case (k, values) => println(Output.shows(processEvents(k, values.toSeq)).mkString("\n"))

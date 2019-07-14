@@ -24,7 +24,7 @@ object OutputProps extends Properties("Output.shows") {
   property("MultiLines map to multiple shows lines") = {
     Prop.forAll(genListOfOutput) {  outputs: List[Output] =>
       val hasMultiLines = outputs.exists {
-        case ml: MultiLine => true
+        case _: MultiLine => true
         case _ => false
       }
 

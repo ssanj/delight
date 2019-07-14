@@ -122,7 +122,7 @@ After fixing some of the tests:
 Add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "net.ssanj" %% "delight" % "0.0.2"
+libraryDependencies += "net.ssanj" %% "delight" % "0.0.3"
 ```
 
 
@@ -138,7 +138,7 @@ publishLocal
 You can then include it in any SBT project as per usual:
 
 ```scala
-libraryDependencies += "net.ssanj" %% "delight" % "0.0.2"
+libraryDependencies += "net.ssanj" %% "delight" % "0.0.3"
 ```
 
 ## Publishing
