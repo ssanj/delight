@@ -117,12 +117,11 @@ After fixing some of the tests:
 
 ## Installation
 
-### Bintray
 
 Add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "net.ssanj" %% "delight" % "0.0.3"
+libraryDependencies += "net.ssanj"  %% "delight"   % "0.0.5" % Test
 ```
 
 
@@ -138,7 +137,7 @@ publishLocal
 You can then include it in any SBT project as per usual:
 
 ```scala
-libraryDependencies += "net.ssanj" %% "delight" % "0.0.3"
+libraryDependencies += "net.ssanj"  %% "delight"   % "0.0.5" % Test
 ```
 
 ## Publishing
@@ -146,7 +145,5 @@ libraryDependencies += "net.ssanj" %% "delight" % "0.0.3"
 To publish a new version perform the following tasks:
 
 ```
-project delight
-publish
-bintrayRelease
+release
 ```

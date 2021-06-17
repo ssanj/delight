@@ -43,7 +43,6 @@ lazy val scalacSettings = Def.setting {
 }
 
 lazy val commonSettings = Seq(
-  // organization := "net.ssanj",
   sonatypeCredentialHost := "s01.oss.sonatype.org",
   Compile / compile / wartremoverErrors ++= Warts.allBut(Wart.Any)
 )
@@ -76,6 +75,5 @@ lazy val delight = (project in file("delight"))
     commonSettings,
     scalacOptions ++= scalacSettings.value,
     crossScalaVersions := supportedScalaVersions,
-    // licenses ++= Seq(("MIT", url("http://opensource.org/licenses/MIT"))),
     libraryDependencies ++= Seq(scalaTest % Compile, scalaCheck)
 )
