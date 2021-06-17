@@ -44,6 +44,7 @@ lazy val scalacSettings = Def.setting {
 
 lazy val commonSettings = Seq(
   // organization := "net.ssanj",
+  sonatypeCredentialHost := "s01.oss.sonatype.org",
   Compile / compile / wartremoverErrors ++= Warts.allBut(Wart.Any)
 )
 
