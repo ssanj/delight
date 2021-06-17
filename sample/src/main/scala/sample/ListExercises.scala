@@ -7,6 +7,7 @@ object ListExercises {
 
   def prepend[A](value: A, list: List[A]): List[A] = value :: list
 
+  @SuppressWarnings(Array("org.wartremover.warts.ListAppend"))
   def append[A](list: List[A], value: A): List[A] = list :+ value
 
   def isEmpty[A](list: List[A]): Boolean =
