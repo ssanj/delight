@@ -37,7 +37,7 @@ final class Nature extends CollectedEventsReporter {
                 )
               }
 
-              case (_, _) => statusLine
+            case (_, _) => statusLine
           }
       }
 

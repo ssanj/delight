@@ -2,7 +2,9 @@ lazy val scala212 = "2.12.17"
 
 lazy val scala213 = "2.13.10"
 
-lazy val supportedScalaVersions = List(scala212, scala213)
+lazy val scala3 = "3.1.0"
+
+lazy val supportedScalaVersions = List(scala212, scala213, scala3)
 
 ThisBuild / scalaVersion := scala212
 
@@ -34,10 +36,20 @@ lazy val scalacOptionsIn213 =
     "-Wunused:_"
   )
 
+lazy val scalacOptionsIn3 =
+  Seq(
+    "-unchecked",
+    "-encoding", "UTF-8",
+    "-deprecation",
+    "-feature",
+    "-Xfatal-warnings",
+  )
+
 lazy val scalacSettings = Def.setting {
   CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, 12))=> scalacOptionsIn212
     case Some((2, 13))=> scalacOptionsIn213
+    case Some((3, _))=> scalacOptionsIn3
     case _ => Seq.empty[String]
   }
 }
@@ -77,3 +89,6 @@ lazy val delight = (project in file("delight"))
     crossScalaVersions := supportedScalaVersions,
     libraryDependencies ++= Seq(scalaTest % Compile, scalaCheck)
 )
+
+
+Global / onChangedBuildSource := ReloadOnSourceChanges

@@ -6,39 +6,39 @@ import org.scalacheck.Gen._
 
 object Gens {
 
-    def genRecordedEvent: Gen[RecordedEvent] = for {
-      runId          <- posNum[Int]
-      suiteName      <- arbitrary[String]
-      suiteId        <- arbitrary[String]
-      suiteClassName <- arbitrary[String]
-      testName       <- arbitrary[String]
-      testText       <- arbitrary[String]
-      timeStamp      <- posNum[Long]
-      status         <- oneOf(Passed, Failed)
-      throwable      <- genThrowable
-    } yield RecordedEvent(
-              RunId(runId),
-              suiteName,
-              suiteId,
-              suiteClassName,
-              testName,
-              testText,
-              None,
-              None,
-              timeStamp,
-              status,
-              if (status == Failed) Some(throwable) else None
-            )
+  def genRecordedEvent: Gen[RecordedEvent] = for {
+    runId          <- posNum[Int]
+    suiteName      <- arbitrary[String]
+    suiteId        <- arbitrary[String]
+    suiteClassName <- arbitrary[String]
+    testName       <- arbitrary[String]
+    testText       <- arbitrary[String]
+    timeStamp      <- posNum[Long]
+    status         <- oneOf(Passed, Failed)
+    throwable      <- genThrowable
+  } yield RecordedEvent(
+            RunId(runId),
+            suiteName,
+            suiteId,
+            suiteClassName,
+            testName,
+            testText,
+            None,
+            None,
+            timeStamp,
+            status,
+            if (status == Failed) Some(throwable) else None
+          )
 
   def genThrowable: Gen[Throwable] = for {
-    message <- arbitrary[String].map(_.take(20))
-    error   <- oneOf(new IllegalArgumentException(message),
-                     new IllegalStateException(message),
-                     new java.sql.SQLException(message),
-                     new java.util.concurrent.TimeoutException(message),
-                     new Exception(message),
-                     new RuntimeException(message))
-  } yield error
+      message <- arbitrary[String].map(_.take(20))
+      error   <- oneOf(new IllegalArgumentException(message),
+                       new IllegalStateException(message),
+                       new java.sql.SQLException(message),
+                       new java.util.concurrent.TimeoutException(message),
+                       new Exception(message),
+                       new RuntimeException(message))
+    } yield error
 
   def genListOfRecordedPassedEvent: Gen[List[RecordedEvent]] = sized {
     listOfN(_, genRecordedEvent.map(re => re.copy(status = Passed, throwable = None)))
@@ -68,7 +68,7 @@ object Gens {
     filename <- listOfN(length, alphaLowerChar).map(_.mkString)
   } yield FileName(s"${filename}.scala")
 
-  def genLineNumber: Gen[LineNumber] = posNum[Int].map(LineNumber)
+  def genLineNumber: Gen[LineNumber] = posNum[Int].map(LineNumber.apply)
 
   def genStackTraceElement: Gen[StackTraceElement] = for {
     className  <- genClassName.map(_.value)

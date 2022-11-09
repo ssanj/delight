@@ -53,7 +53,7 @@ object FailedProp {
         )
     }
 
-private def stackTrace(events: Seq[RecordedEvent], lines: Seq[ErrorLine]): Prop =
+  private def stackTrace(events: Seq[RecordedEvent], lines: Seq[ErrorLine]): Prop =
     events.zip(lines).map {
       case (RecordedEvent(_, _, _, _, _, _, _, _, _, _, Some(error)), ErrorLine(line)) =>
         val errorMessage = error.getMessage
@@ -83,7 +83,7 @@ private def stackTrace(events: Seq[RecordedEvent], lines: Seq[ErrorLine]): Prop 
       case (event, line) => false :| s"expected an event with an error but got: ${event}, for line: ${line}"
     }
 
-private def noStackTrace(events: Seq[RecordedEvent], lines: Seq[ErrorLine]): Prop =
+  private def noStackTrace(events: Seq[RecordedEvent], lines: Seq[ErrorLine]): Prop =
     events.zip(lines).map {
       case (RecordedEvent(_, _, _, _, _, _, _, _, _, _, Some(error)), ErrorLine(line)) =>
         val errorMessage = error.getMessage

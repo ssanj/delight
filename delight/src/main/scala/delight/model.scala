@@ -22,8 +22,8 @@ final case class RecordedEvent(
 
 //ADT for Test Statuses
 sealed trait TestStatus
-final case object Passed extends TestStatus
-final case object Failed extends TestStatus
+case object Passed extends TestStatus
+case object Failed extends TestStatus
 
 sealed trait LineType extends Product with Serializable { val value: String }
 
