@@ -137,7 +137,7 @@ publishLocal
 You can then include it in any SBT project as per usual:
 
 ```scala
-libraryDependencies += "net.ssanj"  %% "delight"   % "0.0.5" % Test
+libraryDependencies += "net.ssanj"  %% "delight"   % "0.1.0" % Test
 ```
 
 ## Publishing
