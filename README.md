@@ -1,6 +1,7 @@
 # Delight #
 
-[![Build Status](https://travis-ci.org/ssanj/delight.svg?branch=master)](https://travis-ci.org/ssanj/delight)
+![](https://img.shields.io/github/v/tag/ssanj/delight?label=version&style=flat-square)
+![](https://img.shields.io/github/workflow/status/ssanj/delight/CI)
 
 Delight is a small collection of [ScalaTest](http://www.scalatest.org/) Reporters that make running your tests a more pleasant experience. These reporters are meant to be run through [SBT](https://www.scala-sbt.org/) although there is nothing stopping you from running them through an IDE.
 
@@ -121,7 +122,7 @@ After fixing some of the tests:
 Add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "net.ssanj"  %% "delight"   % "0.0.5" % Test
+libraryDependencies += "net.ssanj"  %% "delight"   % "0.1.0" % Test
 ```
 
 
