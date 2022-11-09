@@ -1,11 +1,12 @@
 package delight
 package littlered
 
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalacheck.Arbitrary.arbitrary
 import Gens._
 
-final class LittleRedSpec extends Matchers with WordSpecLike {
+final class LittleRedSpec extends AnyWordSpec with Matchers {
 
   "LittleRed" should {
     "not write out stacktrace" when {

@@ -1,9 +1,10 @@
 package sample
 
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 import ListExercises._
 
-final class ListExercisesSpec extends Matchers with WordSpecLike {
+final class ListExercisesSpec extends AnyWordSpec with Matchers {
   "A List" should {
     "prepend a value" when {
       "it is empty" in {

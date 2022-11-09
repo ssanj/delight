@@ -1,6 +1,6 @@
-lazy val scala212 = "2.12.14"
+lazy val scala212 = "2.12.17"
 
-lazy val scala213 = "2.13.6"
+lazy val scala213 = "2.13.10"
 
 lazy val supportedScalaVersions = List(scala212, scala213)
 
@@ -47,9 +47,9 @@ lazy val commonSettings = Seq(
   Compile / compile / wartremoverErrors ++= Warts.allBut(Wart.Any)
 )
 
-lazy val scalaTest = "org.scalatest"  %% "scalatest"   % "3.0.8"
+lazy val scalaTest = "org.scalatest"  %% "scalatest"   % "3.2.14"
 
-lazy val scalaCheck = "org.scalacheck" %% "scalacheck" % "1.15.4" % Test
+lazy val scalaCheck = "org.scalacheck" %% "scalacheck" % "1.17.0" % Test
 
 lazy val parent = (project in file("."))
   .aggregate(delight, sample)

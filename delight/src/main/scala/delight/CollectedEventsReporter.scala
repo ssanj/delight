@@ -15,7 +15,7 @@ trait CollectedEventsReporter extends Reporter {
 
   override def apply(event: Event): Unit = {
     event match {
-      case TestFailed(ordinal, _, suiteName, suiteId, Some(suiteClassName), testName, testText, _,
+      case TestFailed(ordinal, _, suiteName, suiteId, Some(suiteClassName), testName, testText, _, _,
                         throwable, _, _, location, _, payload, _, timestamp) =>
         sideEffect(
           events += RecordedEvent(
