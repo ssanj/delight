@@ -92,3 +92,7 @@ lazy val delight = (project in file("delight"))
 
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
+
+// https://www.scala-sbt.org/1.x/docs/Publishing.html
+// Semantic Versioning where all 0.y.z are treated as initial development (no bincompat guarantees)
+ThisBuild / versionScheme :=  Some("semver-spec")
